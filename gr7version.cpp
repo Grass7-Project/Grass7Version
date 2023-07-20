@@ -4,7 +4,7 @@
 #include "Resource.h"
 #include "gr7version.h"
 
-static TCHAR szWindowClass[] = _T("gr7versionCL");
+static TCHAR szWindowClass[] = L"gr7versionCL";
 int wSizeX = 900;
 int wSizeY = 600;
 size_t numstrcharsize;
@@ -16,7 +16,7 @@ wchar_t *ws;
 
 HINSTANCE hInst;
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(nCmdShow);
@@ -26,7 +26,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 			char buffer[50];
 
 			// Small easter-egg
-			OutputDebugString(_T("why are you debugging this application ya old chum?\n"));
+			OutputDebugString(L"why are you debugging this application ya old chum?\n");
 			HICON hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
 			wcstombs_s(NULL, buffer, lpCmdLine, 50);
 			char* buffer2 = buffer;
@@ -50,10 +50,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 }
 
 // Changelog entry function
-int Changelog(HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPWSTR lpCmdLine,
-	int nCmdShow)
+int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
 	WNDCLASSEX wcex;
 
@@ -73,16 +70,16 @@ int Changelog(HINSTANCE hInstance,
 	if (!RegisterClassEx(&wcex))
 	{
 		MessageBox(NULL,
-			_T("Call to RegisterClassEx failed!"),
-			_T("Error"),
+			L"Call to RegisterClassEx failed!",
+			L"Error",
 			NULL);
 
 		return 1;
 	}
-	TCHAR szTitle[256];
-	wchar_t *szText = _T(" Changelog");
+	TCHAR szTitle[256] = { 0 };
 	// We load the branding string using the Grass7 API
 	wchar_t *szBranding = gr7::LoadOSBrandingString();
+	wchar_t *szText = L" Changelog";
 	size_t size1 = sizeof(szText);
 	size_t size2 = sizeof(szBranding);
 	size_t totalsize = size1 + size2;
@@ -105,16 +102,19 @@ int Changelog(HINSTANCE hInstance,
 	if (!hWnd)
 	{
 		MessageBox(NULL,
-			_T("Call to CreateWindow failed!"),
-			_T("Error"),
+			L"Call to CreateWindow failed!",
+			L"Error",
 			NULL);
 
 		return 1;
 	}
 
 	wchar_t windir[256];
-	char windirB[256];
-	GetWindowsDirectory(windir, sizeof(windir));
+	char windirB[256] = { 0 };
+	UINT errWinDir = GetWindowsDirectory(windir, sizeof(windir));
+	if (errWinDir == 0) {
+		MessageBoxW(NULL, L"GetWindowsDirectoryW returned 0", L"Error", MB_OK | MB_ICONQUESTION);
+	}
 	std::string windirS = gr7::WStringToString(windir);
 	const char *windirCH(windirS.c_str());
 	strncpy_s(windirB, windirCH, sizeof(windirB));
@@ -368,7 +368,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// Prepare the window for painting.
 		hdc = BeginPaint(hwnd, &ps);
 
-		hFont = CreateFont(18, 0, 0, 0, FW_LIGHT, 0, 0, 0, 0, 0, 0, 2, 0, _T("Segoe UI"));
+		hFont = CreateFont(18, 0, 0, 0, FW_LIGHT, 0, 0, 0, 0, 0, 0, 2, 0, L"Segoe UI");
 		hTmp = (HFONT)SelectObject(hdc, hFont);
 
 		// Get vertical scroll bar position.
