@@ -26,8 +26,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			char buffer[50];
 
 			// Small easter-egg
-			OutputDebugString(L"why are you debugging this application ya old chum?\n");
-			HICON hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
+			OutputDebugStringW(L"why are you debugging this application ya old chum?\n");
+			HICON hIcon = LoadIconW(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
 			wcstombs_s(NULL, buffer, lpCmdLine, 50);
 			char* buffer2 = buffer;
 			std::string bf2 = buffer2;
@@ -60,16 +60,16 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hIcon = LoadIconW(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
+	wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
+	wcex.hIconSm = LoadIconW(wcex.hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
 
-	if (!RegisterClassEx(&wcex))
+	if (!RegisterClassExW(&wcex))
 	{
-		MessageBox(NULL,
+		MessageBoxW(NULL,
 			L"Call to RegisterClassEx failed!",
 			L"Error",
 			NULL);
@@ -87,7 +87,7 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 	wcsncat_s(szTitle, szText, totalsize);
 
 	hInst = hInstance;
-	HWND hWnd = CreateWindow(
+	HWND hWnd = CreateWindowW(
 		szWindowClass,
 		szTitle,
 		WS_OVERLAPPEDWINDOW | WS_VSCROLL,
@@ -101,7 +101,7 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 
 	if (!hWnd)
 	{
-		MessageBox(NULL,
+		MessageBoxW(NULL,
 			L"Call to CreateWindow failed!",
 			L"Error",
 			NULL);
@@ -111,7 +111,7 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 
 	wchar_t windir[256];
 	char windirB[256] = { 0 };
-	UINT errWinDir = GetWindowsDirectory(windir, sizeof(windir));
+	UINT errWinDir = GetWindowsDirectoryW(windir, sizeof(windir));
 	if (errWinDir == 0) {
 		MessageBoxW(NULL, L"GetWindowsDirectoryW returned 0", L"Error", MB_OK | MB_ICONQUESTION);
 	}
@@ -160,10 +160,10 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 	SetScrollInfo(hWnd, SB_VERT, &si, true);
 
 	MSG msg;
-	while (GetMessage(&msg, NULL, 0, 0))
+	while (GetMessageW(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		DispatchMessageW(&msg);
 	}
 
 	return (int)msg.wParam;
@@ -204,7 +204,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// Get the handle to the client area's device context. 
 		hdc = GetDC(hwnd);
 		// Extract font dimensions from the text metrics. 
-		GetTextMetrics(hdc, &tm);
+		GetTextMetricsW(hdc, &tm);
 		xChar = tm.tmAveCharWidth;
 		xUpper = (tm.tmPitchAndFamily & 1 ? 3 : 2) * xChar / 2;
 		yChar = tm.tmHeight + tm.tmExternalLeading;
@@ -368,7 +368,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// Prepare the window for painting.
 		hdc = BeginPaint(hwnd, &ps);
 
-		hFont = CreateFont(18, 0, 0, 0, FW_LIGHT, 0, 0, 0, 0, 0, 0, 2, 0, L"Segoe UI");
+		hFont = CreateFontW(18, 0, 0, 0, FW_LIGHT, 0, 0, 0, 0, 0, 0, 2, 0, L"Segoe UI");
 		hTmp = (HFONT)SelectObject(hdc, hFont);
 
 		// Get vertical scroll bar position.
@@ -393,7 +393,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			// Note that "55" in the following depends on the 
 			// maximum size of an abc[] item. Also, you must include
 			// strsafe.h to use the StringCchLength function.
-			hr = StringCchLength(abc[i], numstrcharsize + 1, &abcLength);
+			hr = StringCchLengthW(abc[i], numstrcharsize + 1, &abcLength);
 			if ((FAILED(hr)) | (abcLength == NULL))
 			{
 
@@ -401,7 +401,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 			// Write a line of text to the client area.
-			TextOut(hdc, x, y, abc[i], (INT)abcLength);
+			TextOutW(hdc, x, y, abc[i], (INT)abcLength);
 		}
 
 		// Indicate that painting is finished.
@@ -413,7 +413,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return 0;
 	}
 
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
 LONG MouseScroll(int nDelta) {
@@ -424,7 +424,7 @@ LONG MouseScroll(int nDelta) {
 
 	yPos = si.nPos;
 
-	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &nScrollLines, 0);
+	SystemParametersInfoW(SPI_GETWHEELSCROLLLINES, 0, &nScrollLines, 0);
 
 	if(nDelta == 120) {
 		si.nPos -= nScrollLines;
