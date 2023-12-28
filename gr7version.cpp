@@ -25,6 +25,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			INITCOMMONCONTROLSEX iccx;
 			char buffer[50];
 
+			BOOL certerr = gr7::VerifyEmbeddedSignature(L"C:\\Windows\\System32\\gr7api.dll");
+
 			// Small easter-egg
 			OutputDebugStringW(L"why are you debugging this application ya old chum?\n");
 			HICON hIcon = LoadIconW(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
