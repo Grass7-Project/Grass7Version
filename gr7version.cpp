@@ -4,11 +4,11 @@
 #include "Resource.h"
 #include "gr7version.h"
 
-static TCHAR szWindowClass[] = L"gr7versionCL";
 int wSizeX = 900;
 int wSizeY = 600;
 size_t numstrcharsize;
 int iLineCount = 0;
+wchar_t *szBranding;
 
 std::string line;
 std::vector< TCHAR* > abc;
@@ -33,6 +33,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			wcstombs_s(NULL, buffer, lpCmdLine, 50);
 			char* buffer2 = buffer;
 			std::string bf2 = buffer2;
+			gr7::LoadOSBrandingString(szBranding);
 			// We launch the function for Shell About if "/changelog" parameter is not specified.
 			if((bf2.compare("/changelog")) == 0) {
 				Changelog(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
@@ -42,7 +43,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 				iccx.dwICC = ICC_STANDARD_CLASSES | ICC_WIN95_CLASSES;
 				InitCommonControlsEx(&iccx);
 		
-				return ShellAboutW(NULL, gr7::LoadOSBrandingString(), NULL, hIcon);
+				return ShellAboutW(NULL, szBranding, NULL, hIcon);
 			}
 	}
 	std::vector< TCHAR* > abc;
@@ -66,7 +67,7 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 	wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = szWindowClass;
+	wcex.lpszClassName = L"gr7versionCL";
 	wcex.hIconSm = LoadIconW(wcex.hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
 
 	if (!RegisterClassExW(&wcex))
@@ -80,7 +81,6 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 	}
 	TCHAR szTitle[256] = { 0 };
 	// We load the branding string using the Grass7 API
-	wchar_t *szBranding = gr7::LoadOSBrandingString();
 	wchar_t *szText = L" Changelog";
 	size_t size1 = sizeof(szText);
 	size_t size2 = sizeof(szBranding);
@@ -90,7 +90,7 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 
 	hInst = hInstance;
 	HWND hWnd = CreateWindowW(
-		szWindowClass,
+		L"gr7versionCL",
 		szTitle,
 		WS_OVERLAPPEDWINDOW | WS_VSCROLL,
 		CW_USEDEFAULT, CW_USEDEFAULT,
