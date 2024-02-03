@@ -180,7 +180,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="gr7version.ico" />
-    <None Include="ReadMe.txt" />
+    <None Include="LICENSE" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gr7version.h" />
