@@ -4,17 +4,7 @@
 #include "Resource.h"
 #include "gr7version.h"
 
-int wSizeX = 900;
-int wSizeY = 600;
-size_t numstrcharsize;
-int iLineCount = 0;
-wchar_t *szBranding;
-
-std::string line;
-std::vector< TCHAR* > abc;
-wchar_t *ws;
-
-HINSTANCE hInst;
+ChangelogClass ChangelogClassObjects;
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
@@ -23,43 +13,44 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
 	if(gr7::isGrass7() == 0) {
 			INITCOMMONCONTROLSEX iccx;
-			char buffer[50];
 
 			BOOL certerr = gr7::VerifyEmbeddedSignature(L"C:\\Windows\\System32\\gr7api.dll");
 
 			// Small easter-egg
 			OutputDebugStringW(L"why are you debugging this application ya old chum?\n");
 			HICON hIcon = LoadIconW(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
-			wcstombs_s(NULL, buffer, lpCmdLine, 50);
-			char* buffer2 = buffer;
-			std::string bf2 = buffer2;
-			gr7::LoadOSBrandingString(szBranding);
+			// We load the branding string using the Grass7 API
+			gr7::LoadOSBrandingString(ChangelogClassObjects.szBranding);
+
 			// We launch the function for Shell About if "/changelog" parameter is not specified.
-			if((bf2.compare("/changelog")) == 0) {
-				Changelog(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+			std::wstring bf2 = lpCmdLine;
+			if((bf2.compare(L"/changelog")) == 0) {
+				ChangelogClass::Changelog(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 			}
 			else {
 				iccx.dwSize = sizeof(INITCOMMONCONTROLSEX);
 				iccx.dwICC = ICC_STANDARD_CLASSES | ICC_WIN95_CLASSES;
 				InitCommonControlsEx(&iccx);
 		
-				return ShellAboutW(NULL, szBranding, NULL, hIcon);
+				return ShellAboutW(NULL, ChangelogClassObjects.szBranding, NULL, hIcon);
 			}
 	}
 	std::vector< TCHAR* > abc;
-	line.clear();
-	free(ws);
+	free(ChangelogClassObjects.ws);
 	return 0;
 }
 
 // Changelog entry function
-int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
+int ChangelogClass::Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+	ChangelogClassObjects.wSizeX = 900;
+	ChangelogClassObjects.wSizeY = 600;
+
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndProc;
+	wcex.lpfnWndProc = ChangelogClass::WndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
@@ -79,22 +70,17 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 
 		return 1;
 	}
-	TCHAR szTitle[256] = { 0 };
-	// We load the branding string using the Grass7 API
-	wchar_t *szText = L" Changelog";
-	size_t size1 = sizeof(szText);
-	size_t size2 = sizeof(szBranding);
-	size_t totalsize = size1 + size2;
-	wcscpy_s(szTitle, szBranding);
-	wcsncat_s(szTitle, szText, totalsize);
+	
+	std::wstring szTitle = ChangelogClassObjects.szBranding;
+	szTitle.append(L" Changelog");
 
-	hInst = hInstance;
+	ChangelogClassObjects.hInst = hInstance;
 	HWND hWnd = CreateWindowW(
 		L"gr7versionCL",
-		szTitle,
+		szTitle.c_str(),
 		WS_OVERLAPPEDWINDOW | WS_VSCROLL,
 		CW_USEDEFAULT, CW_USEDEFAULT,
-		wSizeX, wSizeY,
+		ChangelogClassObjects.wSizeX, ChangelogClassObjects.wSizeY,
 		NULL,
 		NULL,
 		hInstance,
@@ -111,40 +97,35 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 		return 1;
 	}
 
-	wchar_t windir[256];
-	char windirB[256] = { 0 };
-	UINT errWinDir = GetWindowsDirectoryW(windir, sizeof(windir));
+	WCHAR windirW[MAX_PATH];
+	UINT errWinDir = GetWindowsDirectoryW(windirW, sizeof(windirW));
 	if (errWinDir == 0) {
 		MessageBoxW(NULL, L"GetWindowsDirectoryW returned 0", L"Error", MB_OK | MB_ICONQUESTION);
 	}
-	std::string windirS = gr7::WStringToString(windir);
-	const char *windirCH(windirS.c_str());
-	strncpy_s(windirB, windirCH, sizeof(windirB));
-	strncat_s(windirB, "\\changelog.txt", sizeof(windirB));
+	std::wstring windir = windirW;
+	windir.append(L"\\changelog.txt");
 
 	size_t numCharstr;
 
-	std::ifstream file(windirB);
+	std::ifstream file(windir);
 	if (file.is_open()) {
-		while (getline(file, line)) {
-			ws = gr7::convertchar(line.c_str());
+		while (getline(file, ChangelogClassObjects.line)) {
+			ChangelogClassObjects.ws = gr7::convertchar(ChangelogClassObjects.line.c_str());
 
-			abc.push_back(ws);
+			ChangelogClassObjects.abc.push_back(ChangelogClassObjects.ws);
 
-			size_t strcharsize = line.length();
-			if (strcharsize < numstrcharsize) {
+			size_t strcharsize = ChangelogClassObjects.line.length();
+			if (strcharsize < ChangelogClassObjects.numstrcharsize) {
 				numCharstr = strcharsize;
 			}
 			else {
-				numstrcharsize = strcharsize;
+				ChangelogClassObjects.numstrcharsize = strcharsize;
 			}
-			iLineCount++;
+			ChangelogClassObjects.iLineCount++;
 		}
 	}
 	file.close();
-	memset(windir, 0, sizeof(windir));
-	memset(windirB, 0, sizeof(windirB));
-	windirS.clear();
+	memset(windirW, 0, sizeof(windirW));
 
 	ShowWindow(hWnd,
 		nCmdShow);
@@ -170,12 +151,8 @@ int Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ L
 
 	return (int)msg.wParam;
 }
-SCROLLINFO si;
-static int yPos;
-static int yChar;
-HWND hwnd1;
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ChangelogClass::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
@@ -209,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		GetTextMetricsW(hdc, &tm);
 		xChar = tm.tmAveCharWidth;
 		xUpper = (tm.tmPitchAndFamily & 1 ? 3 : 2) * xChar / 2;
-		yChar = tm.tmHeight + tm.tmExternalLeading;
+		ChangelogClassObjects.yChar = tm.tmHeight + tm.tmExternalLeading;
 
 		// Free the device context. 
 		ReleaseDC(hwnd, hdc);
@@ -228,55 +205,55 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		xClient = LOWORD(lParam);
 
 		// Set the vertical scrolling range and page size
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_RANGE | SIF_PAGE;
-		si.nMin = 0;
-		si.nMax = iLineCount;
-		si.nPage = yClient / yChar;
-		SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+		ChangelogClassObjects.si.cbSize = sizeof(ChangelogClassObjects.si);
+		ChangelogClassObjects.si.fMask = SIF_RANGE | SIF_PAGE;
+		ChangelogClassObjects.si.nMin = 0;
+		ChangelogClassObjects.si.nMax = ChangelogClassObjects.iLineCount;
+		ChangelogClassObjects.si.nPage = yClient / ChangelogClassObjects.yChar;
+		SetScrollInfo(hwnd, SB_VERT, &ChangelogClassObjects.si, TRUE);
 
 		// Set the horizontal scrolling range and page size. 
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_RANGE | SIF_PAGE;
-		si.nMin = 0;
-		si.nMax = 2 + xClientMax / xChar;
-		si.nPage = xClient / xChar;
-		SetScrollInfo(hwnd, SB_HORZ, &si, TRUE);
+		ChangelogClassObjects.si.cbSize = sizeof(ChangelogClassObjects.si);
+		ChangelogClassObjects.si.fMask = SIF_RANGE | SIF_PAGE;
+		ChangelogClassObjects.si.nMin = 0;
+		ChangelogClassObjects.si.nMax = 2 + xClientMax / xChar;
+		ChangelogClassObjects.si.nPage = xClient / xChar;
+		SetScrollInfo(hwnd, SB_HORZ, &ChangelogClassObjects.si, TRUE);
 
 		return 0;
 	case WM_HSCROLL:
 		// Get all the vertial scroll bar information.
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_ALL;
+		ChangelogClassObjects.si.cbSize = sizeof(ChangelogClassObjects.si);
+		ChangelogClassObjects.si.fMask = SIF_ALL;
 
 		// Save the position for comparison later on.
-		GetScrollInfo(hwnd, SB_HORZ, &si);
-		xPos = si.nPos;
+		GetScrollInfo(hwnd, SB_HORZ, &ChangelogClassObjects.si);
+		xPos = ChangelogClassObjects.si.nPos;
 		switch (LOWORD(wParam))
 		{
 			// User clicked the left arrow.
 		case SB_LINELEFT:
-			si.nPos -= 1;
+			ChangelogClassObjects.si.nPos -= 1;
 			break;
 
 			// User clicked the right arrow.
 		case SB_LINERIGHT:
-			si.nPos += 1;
+			ChangelogClassObjects.si.nPos += 1;
 			break;
 
 			// User clicked the scroll bar shaft left of the scroll box.
 		case SB_PAGELEFT:
-			si.nPos -= si.nPage;
+			ChangelogClassObjects.si.nPos -= ChangelogClassObjects.si.nPage;
 			break;
 
 			// User clicked the scroll bar shaft right of the scroll box.
 		case SB_PAGERIGHT:
-			si.nPos += si.nPage;
+			ChangelogClassObjects.si.nPos += ChangelogClassObjects.si.nPage;
 			break;
 
 			// User dragged the scroll box.
 		case SB_THUMBTRACK:
-			si.nPos = si.nTrackPos;
+			ChangelogClassObjects.si.nPos = ChangelogClassObjects.si.nTrackPos;
 			break;
 
 		default:
@@ -285,62 +262,62 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		// Set the position and then retrieve it.  Due to adjustments
 		// by Windows it may not be the same as the value set.
-		si.fMask = SIF_POS;
-		SetScrollInfo(hwnd, SB_HORZ, &si, TRUE);
-		GetScrollInfo(hwnd, SB_HORZ, &si);
+		ChangelogClassObjects.si.fMask = SIF_POS;
+		SetScrollInfo(hwnd, SB_HORZ, &ChangelogClassObjects.si, TRUE);
+		GetScrollInfo(hwnd, SB_HORZ, &ChangelogClassObjects.si);
 
 		// If the position has changed, scroll the window.
-		if (si.nPos != xPos)
+		if (ChangelogClassObjects.si.nPos != xPos)
 		{
-			ScrollWindow(hwnd, xChar * (xPos - si.nPos), 0, NULL, NULL);
+			ScrollWindow(hwnd, xChar * (xPos - ChangelogClassObjects.si.nPos), 0, NULL, NULL);
 		}
 
 		return 0;
 
 	case WM_VSCROLL:
 		// Get all the vertial scroll bar information.
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_ALL;
-		GetScrollInfo(hwnd, SB_VERT, &si);
+		ChangelogClassObjects.si.cbSize = sizeof(si);
+		ChangelogClassObjects.si.fMask = SIF_ALL;
+		GetScrollInfo(hwnd, SB_VERT, &ChangelogClassObjects.si);
 
 		// Save the position for comparison later on.
-		yPos = si.nPos;
+		ChangelogClassObjects.yPos = ChangelogClassObjects.si.nPos;
 		switch (LOWORD(wParam))
 		{
 
 			// User clicked the HOME keyboard key.
 		case SB_TOP:
-			si.nPos = si.nMin;
+			ChangelogClassObjects.si.nPos = ChangelogClassObjects.si.nMin;
 			break;
 
 			// User clicked the END keyboard key.
 		case SB_BOTTOM:
-			si.nPos = si.nMax;
+			ChangelogClassObjects.si.nPos = ChangelogClassObjects.si.nMax;
 			break;
 
 			// User clicked the top arrow.
 		case SB_LINEUP:
-			si.nPos -= 1;
+			ChangelogClassObjects.si.nPos -= 1;
 			break;
 
 			// User clicked the bottom arrow.
 		case SB_LINEDOWN:
-			si.nPos += 1;
+			ChangelogClassObjects.si.nPos += 1;
 			break;
 
 			// User clicked the scroll bar shaft above the scroll box.
 		case SB_PAGEUP:
-			si.nPos -= si.nPage;
+			ChangelogClassObjects.si.nPos -= ChangelogClassObjects.si.nPage;
 			break;
 
 			// User clicked the scroll bar shaft below the scroll box.
 		case SB_PAGEDOWN:
-			si.nPos += si.nPage;
+			ChangelogClassObjects.si.nPos += ChangelogClassObjects.si.nPage;
 			break;
 
 			// User dragged the scroll box.
 		case SB_THUMBTRACK:
-			si.nPos = si.nTrackPos;
+			ChangelogClassObjects.si.nPos = ChangelogClassObjects.si.nTrackPos;
 			break;
 
 		default:
@@ -349,22 +326,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		// Set the position and then retrieve it.  Due to adjustments
 		// by Windows it may not be the same as the value set.
-		si.fMask = SIF_POS;
-		SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-		GetScrollInfo(hwnd, SB_VERT, &si);
+		ChangelogClassObjects.si.fMask = SIF_POS;
+		SetScrollInfo(hwnd, SB_VERT, &ChangelogClassObjects.si, TRUE);
+		GetScrollInfo(hwnd, SB_VERT, &ChangelogClassObjects.si);
 
 		// If the position has changed, scroll window and update it.
-		if (si.nPos != yPos)
+		if (ChangelogClassObjects.si.nPos != ChangelogClassObjects.yPos)
 		{
-			ScrollWindow(hwnd, 0, yChar * (yPos - si.nPos), NULL, NULL);
+			ScrollWindow(hwnd, 0, ChangelogClassObjects.yChar * (ChangelogClassObjects.yPos - ChangelogClassObjects.si.nPos), NULL, NULL);
 			UpdateWindow(hwnd);
 		}
 
 		return 0;
 
 	case WM_MOUSEWHEEL:
-		hwnd1 = hwnd;
-		return MouseScroll((short)HIWORD(wParam));
+		ChangelogClassObjects.hwnd1 = hwnd;
+		return ChangelogClass::MouseScroll((short)HIWORD(wParam));
 
 	case WM_PAINT:
 		// Prepare the window for painting.
@@ -374,28 +351,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		hTmp = (HFONT)SelectObject(hdc, hFont);
 
 		// Get vertical scroll bar position.
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_POS;
-		GetScrollInfo(hwnd, SB_VERT, &si);
-		yPos = si.nPos;
+		ChangelogClassObjects.si.cbSize = sizeof(si);
+		ChangelogClassObjects.si.fMask = SIF_POS;
+		GetScrollInfo(hwnd, SB_VERT, &ChangelogClassObjects.si);
+		ChangelogClassObjects.yPos = ChangelogClassObjects.si.nPos;
 
 		// Get horizontal scroll bar position.
-		GetScrollInfo(hwnd, SB_HORZ, &si);
-		xPos = si.nPos;
+		GetScrollInfo(hwnd, SB_HORZ, &ChangelogClassObjects.si);
+		xPos = ChangelogClassObjects.si.nPos;
 
 		// Find painting limits.
-		FirstLine = max(0, yPos + ps.rcPaint.top / yChar);
-		LastLine = iLineCount - 1;
+		FirstLine = max(0, ChangelogClassObjects.yPos + ps.rcPaint.top / ChangelogClassObjects.yChar);
+		LastLine = ChangelogClassObjects.iLineCount - 1;
 
 		for (i = FirstLine; i <= LastLine; i++)
 		{
 			x = xChar * (1 - xPos);
-			y = yChar * (i - yPos);
+			y = ChangelogClassObjects.yChar * (i - ChangelogClassObjects.yPos);
 
 			// Note that "55" in the following depends on the 
 			// maximum size of an abc[] item. Also, you must include
 			// strsafe.h to use the StringCchLength function.
-			hr = StringCchLengthW(abc[i], numstrcharsize + 1, &abcLength);
+			hr = StringCchLengthW(ChangelogClassObjects.abc[i], ChangelogClassObjects.numstrcharsize + 1, &abcLength);
 			if ((FAILED(hr)) | (abcLength == NULL))
 			{
 
@@ -403,7 +380,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 
 			// Write a line of text to the client area.
-			TextOutW(hdc, x, y, abc[i], (INT)abcLength);
+			TextOutW(hdc, x, y, ChangelogClassObjects.abc[i], (INT)abcLength);
 		}
 
 		// Indicate that painting is finished.
@@ -418,33 +395,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
-LONG MouseScroll(int nDelta) {
+LONG ChangelogClass::MouseScroll(int nDelta) {
 	int nScrollLines;
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_ALL;
-	GetScrollInfo(hwnd1, SB_VERT, &si);
+	ChangelogClassObjects.si.cbSize = sizeof(si);
+	ChangelogClassObjects.si.fMask = SIF_ALL;
+	GetScrollInfo(ChangelogClassObjects.hwnd1, SB_VERT, &ChangelogClassObjects.si);
 
-	yPos = si.nPos;
+	ChangelogClassObjects.yPos = ChangelogClassObjects.si.nPos;
 
 	SystemParametersInfoW(SPI_GETWHEELSCROLLLINES, 0, &nScrollLines, 0);
 
 	if(nDelta == 120) {
-		si.nPos -= nScrollLines;
+		ChangelogClassObjects.si.nPos -= nScrollLines;
 	}
 
 	if (nDelta == -120) {
-		si.nPos += nScrollLines;
+		ChangelogClassObjects.si.nPos += nScrollLines;
 	}
 
-	si.fMask = SIF_POS;
+	ChangelogClassObjects.si.fMask = SIF_POS;
 
-	SetScrollInfo(hwnd1, SB_VERT, &si, TRUE);
-	GetScrollInfo(hwnd1, SB_VERT, &si);
+	SetScrollInfo(ChangelogClassObjects.hwnd1, SB_VERT, &ChangelogClassObjects.si, TRUE);
+	GetScrollInfo(ChangelogClassObjects.hwnd1, SB_VERT, &ChangelogClassObjects.si);
 
-	if (si.nPos != yPos)
+	if (ChangelogClassObjects.si.nPos != ChangelogClassObjects.yPos)
 	{
-		ScrollWindow(hwnd1, 0, yChar * (yPos - si.nPos), NULL, NULL);
-		UpdateWindow(hwnd1);
+		ScrollWindow(ChangelogClassObjects.hwnd1, 0, ChangelogClassObjects.yChar * (ChangelogClassObjects.yPos - ChangelogClassObjects.si.nPos), NULL, NULL);
+		UpdateWindow(ChangelogClassObjects.hwnd1);
 	}
 	return 0;
 }
