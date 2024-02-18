@@ -23,8 +23,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			gr7::LoadOSBrandingString(ChangelogClassObjects.szBranding);
 
 			// We launch the function for Shell About if "/changelog" parameter is not specified.
-			std::wstring bf2 = lpCmdLine;
-			if((bf2.compare(L"/changelog")) == 0) {
+			if (wcsstr(lpCmdLine, L"/changelog") != 0) {
 				ChangelogClass::Changelog(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
 			}
 			else {
