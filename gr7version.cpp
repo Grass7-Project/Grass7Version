@@ -11,16 +11,16 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(nCmdShow);
 
-	if(gr7::isGrass7() == 0) {
+	if(Grass7API::Check::isGrass7() == 0) {
 			INITCOMMONCONTROLSEX iccx;
 
-			BOOL certerr = gr7::VerifyEmbeddedSignature(L"C:\\Windows\\System32\\gr7api.dll");
+			BOOL certerr = Grass7API::Check::VerifyEmbeddedSignature(L"C:\\Windows\\System32\\gr7api.dll");
 
 			// Small easter-egg
 			OutputDebugStringW(L"why are you debugging this application ya old chum?\n");
 			HICON hIcon = LoadIconW(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
 			// We load the branding string using the Grass7 API
-			gr7::LoadOSBrandingString(ChangelogClassObjects.szBranding);
+			Grass7API::String::LoadOSBrandingString(ChangelogClassObjects.szBranding);
 
 			// We launch the function for Shell About if "/changelog" parameter is not specified.
 			if (wcsstr(lpCmdLine, L"/changelog") != 0) {
@@ -109,7 +109,7 @@ int ChangelogClass::Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
 	std::ifstream file(windir);
 	if (file.is_open()) {
 		while (getline(file, ChangelogClassObjects.line)) {
-			ChangelogClassObjects.ws = gr7::convertchar(ChangelogClassObjects.line.c_str());
+			ChangelogClassObjects.ws = Grass7API::Convert::convertchar(ChangelogClassObjects.line.c_str());
 
 			ChangelogClassObjects.abc.push_back(ChangelogClassObjects.ws);
 
