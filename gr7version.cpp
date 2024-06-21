@@ -106,10 +106,10 @@ int ChangelogClass::Changelog(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrev
 
 	size_t numCharstr;
 
-	std::ifstream file(windir);
+	std::wifstream file(windir);
 	if (file.is_open()) {
 		while (getline(file, ChangelogClassObjects.line)) {
-			ChangelogClassObjects.ws = Grass7API::Convert::convertchar(ChangelogClassObjects.line.c_str());
+			ChangelogClassObjects.ws = const_cast< wchar_t* >(ChangelogClassObjects.line.c_str());
 
 			ChangelogClassObjects.abc.push_back(ChangelogClassObjects.ws);
 

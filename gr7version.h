@@ -17,7 +17,7 @@ private:
 		iLineCount;
 	size_t numstrcharsize;
 
-	std::string line;
+	std::wstring line;
 	std::vector< TCHAR* > abc;
 
 	HINSTANCE hInst;
