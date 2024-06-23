@@ -153,7 +153,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>"C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /v /f "$(SolutionDir)Certificates\gr7SPC.pfx" /t http://timestamp.comodoca.com/authenticode /p redacted "$(SolutionDir)Build\$(Platform)\$(Configuration)\$(targetfilename)"</Command>
+      <Command>"C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /v /f "$(SolutionDir)Certificates\gr7SPC.pfx" /fd sha256 /tr http://timestamp.digicert.com /p redacted /td sha256 "$(SolutionDir)Build\$(Platform)\$(Configuration)\$(targetfilename)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -175,7 +175,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>"C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /v /f "$(SolutionDir)Certificates\gr7SPC.pfx" /t http://timestamp.comodoca.com/authenticode /p redacted "$(SolutionDir)Build\$(Platform)\$(Configuration)\$(targetfilename)"</Command>
+      <Command>"C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /v /f "$(SolutionDir)Certificates\gr7SPC.pfx" /fd sha256 /tr http://timestamp.digicert.com /p redacted /td sha256 "$(SolutionDir)Build\$(Platform)\$(Configuration)\$(targetfilename)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
