@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <iostream>
 
-// balls
+
 #include <fstream>
 #include <string>
 #include <Gr7API.h>
