@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Global.h"
 #include "ChangelogGUI.h"
 
 ChangelogGUI ChangelogGUIObjects;
