@@ -15,6 +15,7 @@
 
 // Windows Header Files:
 #include <windows.h>
+#include <Richedit.h>
 
 // C RunTime Header Files
 #include <stdlib.h>

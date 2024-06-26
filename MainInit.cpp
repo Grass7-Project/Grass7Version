@@ -5,14 +5,15 @@
 int MainInit::Init(MSG &msg, HINSTANCE &hInstance, HINSTANCE &hPrevInstance, LPTSTR &lpCmdLine, int &nCmdShow)
 {
 	if (Grass7API::Check::isGrass7() == 0) {
+		MainObjects.hInst = hInstance;
 
 		OutputDebugStringW(L"why are you debugging this application ya old chum?\n");
 		// Load branding string
-		Grass7API::String::LoadOSBrandingString(MainObjects.szBranding);
+		Grass7API::String::LoadOSBrandingString(MainObjects.szBranding, L"%WINDOWS_GENERIC%");
 
 		// Launch the function for Shell About if "/changelog" parameter is not specified.
 		if (wcsstr(lpCmdLine, L"/changelog") != 0) {
-			ChangelogGUI::Init(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+			ChangelogGUI::Init();
 		}
 		else {
 			INITCOMMONCONTROLSEX iccx;
