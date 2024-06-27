@@ -4,7 +4,7 @@
 ChangelogGUI ChangelogGUIObjects;
 
 // Changelog entry function
-int ChangelogGUI::Init()
+int ChangelogGUI::Init(HWND hWnd)
 {
 	ChangelogGUIObjects.wSizeX = 900;
 	ChangelogGUIObjects.wSizeY = 600;
@@ -37,7 +37,7 @@ int ChangelogGUI::Init()
 	std::wstring szTitle = MainObjects.szBranding;
 	szTitle.append(L" Changelog");
 
-	MainObjects.hWndMainWindow = CreateWindowW(
+	hWnd = CreateWindowW(
 		L"gr7versionCL",
 		szTitle.c_str(),
 		WS_OVERLAPPEDWINDOW,
@@ -49,7 +49,7 @@ int ChangelogGUI::Init()
 		NULL
 	);
 
-	if (!MainObjects.hWndMainWindow)
+	if (!hWnd)
 	{
 		MessageBoxW(NULL,
 			L"Call to CreateWindow failed!",
@@ -67,10 +67,10 @@ int ChangelogGUI::Init()
 	std::wstring file = windirW.c_str();
 	file.append(L"\\Changelog.rtf");
 
-	ShowWindow(MainObjects.hWndMainWindow, SW_SHOW);
-	UpdateWindow(MainObjects.hWndMainWindow);
+	ShowWindow(hWnd, SW_SHOW);
+	UpdateWindow(hWnd);
 
-	MainObjects.hWndRichEditCtrl = Grass7API::RichEditControl::CreateRichEdit(MainObjects.hWndMainWindow, 0, 0, ChangelogGUIObjects.wSizeX, ChangelogGUIObjects.wSizeY, MainObjects.hInst);
+	MainObjects.hWndRichEditCtrl = Grass7API::RichEditControl::CreateRichEdit(hWnd, 0, 0, ChangelogGUIObjects.wSizeX, ChangelogGUIObjects.wSizeY, MainObjects.hInst);
 	LONG lExStyle = GetWindowLong(MainObjects.hWndRichEditCtrl, GWL_EXSTYLE);
 	lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
 	SetWindowLongW(MainObjects.hWndRichEditCtrl, GWL_EXSTYLE, lExStyle);
