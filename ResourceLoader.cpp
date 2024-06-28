@@ -3,28 +3,28 @@
 
 void ResourceLoader::LoadBitmaps()
 {
-	// Normal Button States
-	BitmapObjects.hNormalBtnImg1 = static_cast<HBITMAP>(LoadImageW(MainObjects.hInst, MAKEINTRESOURCE(IDB_NORMAL_BTN1_BMP), IMAGE_BITMAP, 0, 0, 0));
-
-	// Pressed Button States
-	BitmapObjects.hNormalBtnImg2 = static_cast<HBITMAP>(LoadImageW(MainObjects.hInst, MAKEINTRESOURCE(IDB_NORMAL_BTN2_BMP), IMAGE_BITMAP, 0, 0, 0));
-
-	// Disabled Button States
-	BitmapObjects.hNormalBtnImg3 = static_cast<HBITMAP>(LoadImageW(MainObjects.hInst, MAKEINTRESOURCE(IDB_NORMAL_BTN3_BMP), IMAGE_BITMAP, 0, 0, 0));
-
-	// Hover Button States
-	BitmapObjects.hNormalBtnImg4 = static_cast<HBITMAP>(LoadImageW(MainObjects.hInst, MAKEINTRESOURCE(IDB_NORMAL_BTN4_BMP), IMAGE_BITMAP, 0, 0, 0));
+	Grass7API::Branding::LoadOSBrandingImage(BitmapObjects.hBanner);
+	BitmapObjects.hBanner = Grass7API::Paint::ReplaceColor(BitmapObjects.hBanner, RGB(255, 255, 255), RGB(240, 240, 240), NULL);
 }
 
 // Load strings
 void ResourceLoader::LoadStrings()
 {
+	// Load branding string
+	Grass7API::Branding::LoadOSBrandingString(MainObjects.szBranding, L"%WINDOWS_GENERIC%");
+
 	// Init variables
-	std::wstring NextButtonText(MAX_PATH, 0);
+	std::wstring OKButtonText(MAX_PATH, 0);
+	std::wstring ChangelogButtonText(MAX_PATH, 0);
+	std::wstring ErrorTitleText(MAX_PATH, 0);
 
 	// Button strings
-	NextButtonText.resize(LoadStringW(MainObjects.hInst, IDS_NEXTBTN, &NextButtonText[0], (int)NextButtonText.size()));
+	OKButtonText.resize(LoadStringW(MainObjects.hInst, IDS_OKBTN, &OKButtonText[0], (int)OKButtonText.size()));
+	ChangelogButtonText.resize(LoadStringW(MainObjects.hInst, IDS_CHANGELOGBTN, &ChangelogButtonText[0], (int)ChangelogButtonText.size()));
+	ErrorTitleText.resize(LoadStringW(MainObjects.hInst, IDS_ERRORTITLE, &ErrorTitleText[0], (int)ErrorTitleText.size()));
 
 	// Set loaded wstrings
-	AppResStringsObjects.NextButtonText = NextButtonText;
+	AppResStringsObjects.OKButtonText = OKButtonText;
+	AppResStringsObjects.ChangelogButtonText = ChangelogButtonText;
+	AppResStringsObjects.ErrorTitleText = ErrorTitleText;
 }

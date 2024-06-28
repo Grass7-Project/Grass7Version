@@ -1,8 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>/changelog</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <RemoteDebuggerWorkingDirectory>C:\remotetemp</RemoteDebuggerWorkingDirectory>
+    <RemoteDebuggerCommand>C:\remotetemp\gr7version.exe</RemoteDebuggerCommand>
+    <RemoteDebuggerServerName>172.30.128.128:4020</RemoteDebuggerServerName>
+    <DeploymentDirectory>C:\remotetemp</DeploymentDirectory>
+    <RemoteDebuggerCommandArguments>/changelog</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommandArguments>

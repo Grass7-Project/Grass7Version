@@ -2,32 +2,40 @@
 #include "MainInit.h"
 #include "MainGUI.h"
 #include "ChangelogGUI.h"
+#include "ResourceLoader.h"
 
 int MainInit::Init(MSG &msg, HINSTANCE &hInstance, HINSTANCE &hPrevInstance, LPTSTR &lpCmdLine, int &nCmdShow)
 {
+	BOOL ret = 0;
 	if (Grass7API::Check::isGrass7() == 0) {
 		MainObjects.hInst = hInstance;
 
-		OutputDebugStringW(L"why are you debugging this application ya old chum?\n");
-		// Load branding string
-		Grass7API::Branding::LoadOSBrandingString(MainObjects.szBranding, L"%WINDOWS_GENERIC%");
+		// Call the function to load the bitmaps
+		ResourceLoader::LoadBitmaps();
 
-		// Launch the function for Shell About if "/changelog" parameter is not specified.
-		if (wcsstr(lpCmdLine, L"/changelog") != 0) {
-			ChangelogGUI::Init(MainObjects.hWndChangelogWindow);
+		// Load strings
+		ResourceLoader::LoadStrings();
+
+		// Register window classes
+		ret = MainGUI::Register();
+		if (ret != 0) {
+			return ret;
 		}
-		else {
-			MainGUI::Init(MainObjects.hWndMainWindow);
 
-			/*INITCOMMONCONTROLSEX iccx;
-			HICON hIcon = LoadIconW(hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
-			iccx.dwSize = sizeof(INITCOMMONCONTROLSEX);
-			iccx.dwICC = ICC_STANDARD_CLASSES | ICC_WIN95_CLASSES;
-			InitCommonControlsEx(&iccx);
+		ret = ChangelogGUI::Register();
+		if (ret != 0) {
+			return ret;
+		}
 
-			return ShellAboutW(NULL, MainObjects.szBranding, NULL, hIcon);*/
+		ret = MainGUI::Init();
+
+		MSG msg;
+		while (GetMessageW(&msg, NULL, 0, 0))
+		{
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
 		}
 	}
 
-	return 0;
+	return ret;
 }

@@ -4,95 +4,63 @@
 ChangelogGUI ChangelogGUIObjects;
 
 // Changelog entry function
-int ChangelogGUI::Init(HWND hWnd)
+int ChangelogGUI::Init()
 {
 	ChangelogGUIObjects.wSizeX = 900;
 	ChangelogGUIObjects.wSizeY = 600;
 
-	WNDCLASSEX wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = ChangelogGUI::WndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = MainObjects.hInst;
-	wcex.hIcon = LoadIconW(MainObjects.hInst, MAKEINTRESOURCE(IDI_GR7VERSION));
-	wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = L"gr7versionCL";
-	wcex.hIconSm = LoadIconW(wcex.hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
-
-	if (!RegisterClassExW(&wcex))
-	{
-		MessageBoxW(NULL,
-			L"Call to RegisterClassEx failed!",
-			L"Error",
-			NULL);
-
-		return 1;
-	}
-
 	std::wstring szTitle = MainObjects.szBranding;
 	szTitle.append(L" Changelog");
 
-	hWnd = CreateWindowW(
-		L"gr7versionCL",
+	MainObjects.hWndChangelogWindow = CreateWindowExW(
+		NULL,
+		L"gr7Changelog",
 		szTitle.c_str(),
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		ChangelogGUIObjects.wSizeX, ChangelogGUIObjects.wSizeY,
-		NULL,
+		MainObjects.hWndChangelogWindow,
 		NULL,
 		MainObjects.hInst,
 		NULL
 	);
 
-	if (!hWnd)
+	if (!MainObjects.hWndChangelogWindow)
 	{
-		MessageBoxW(NULL,
-			L"Call to CreateWindow failed!",
-			L"Error",
-			NULL);
+		MessageBoxW(NULL, L"Failed to create the Changelog Window", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
+
+	DWORD dwStyle = GetWindowLongW(MainObjects.hWndChangelogWindow, GWL_STYLE);
+	DWORD dwRemove = WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+	DWORD dwNewStyle = dwStyle & ~dwRemove;
+	SetWindowLongW(MainObjects.hWndChangelogWindow, GWL_STYLE, dwNewStyle);
 
 	std::wstring windirW(MAX_PATH, 0);
 	UINT errWinDir = GetWindowsDirectoryW(&windirW[0], MAX_PATH);
 	if (errWinDir == 0) {
-		MessageBoxW(NULL, L"GetWindowsDirectoryW returned 0", L"Error", MB_OK | MB_ICONQUESTION);
+		MessageBoxW(NULL, L"Failed to get path of the Windows directory", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 	std::wstring file = windirW.c_str();
 	file.append(L"\\Changelog.rtf");
 
-	ShowWindow(hWnd, SW_SHOW);
-	UpdateWindow(hWnd);
+	ShowWindow(MainObjects.hWndChangelogWindow, SW_SHOW);
+	UpdateWindow(MainObjects.hWndChangelogWindow);
 
-	MainObjects.hWndRichEditCtrl = Grass7API::RichEditControl::CreateRichEdit(hWnd, 0, 0, ChangelogGUIObjects.wSizeX, ChangelogGUIObjects.wSizeY, MainObjects.hInst);
-	LONG lExStyle = GetWindowLong(MainObjects.hWndRichEditCtrl, GWL_EXSTYLE);
+	MainObjects.hWndRichEditCtrl = Grass7API::RichEditControl::CreateRichEdit(MainObjects.hWndChangelogWindow, 0, 0, ChangelogGUIObjects.wSizeX, ChangelogGUIObjects.wSizeY, MainObjects.hInst);
+	LONG lExStyle = GetWindowLongW(MainObjects.hWndRichEditCtrl, GWL_EXSTYLE);
 	lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
 	SetWindowLongW(MainObjects.hWndRichEditCtrl, GWL_EXSTYLE, lExStyle);
 	SetWindowPos(MainObjects.hWndRichEditCtrl, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 	Grass7API::RichEditControl::FillRichEditFromFile(MainObjects.hWndRichEditCtrl, file.c_str(), SF_RTF);
 	::SendMessageW(MainObjects.hWndRichEditCtrl, EM_SETREADONLY, TRUE, 0);
 
-	MSG msg;
-	while (GetMessageW(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-	}
-
-	return (int)msg.wParam;
+	return 0;
 }
 
-LRESULT CALLBACK ChangelogGUI::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ChangelogGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	HDC hdc;
-	PAINTSTRUCT ps;
-
 	static int xClient;     // width of client area 
 	static int yClient;     // height of client area 
 
@@ -115,12 +83,13 @@ LRESULT CALLBACK ChangelogGUI::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 		}
 		break;
 		case WM_PAINT:
-		{
-			hdc = BeginPaint(hwnd, &ps);
-
-			EndPaint(hwnd, &ps);
-		}
-		break;
+			PAINTSTRUCT     ps;
+			HDC             hdc;
+			{
+				hdc = BeginPaint(hWnd, &ps);
+				EndPaint(hWnd, &ps);
+			}
+			break;
 
 		case WM_DESTROY:
 		{
@@ -129,5 +98,30 @@ LRESULT CALLBACK ChangelogGUI::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 		break;
 	}
 
-	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+BOOL ChangelogGUI::Register()
+{
+	WNDCLASSEX wcex;
+
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = ChangelogGUI::WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = MainObjects.hInst;
+	wcex.hIcon = LoadIconW(MainObjects.hInst, MAKEINTRESOURCE(IDI_GR7VERSION));
+	wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = NULL;
+	wcex.lpszClassName = L"gr7Changelog";
+	wcex.hIconSm = LoadIconW(wcex.hInstance, MAKEINTRESOURCE(IDI_GR7VERSION));
+
+	if (!RegisterClassExW(&wcex))
+	{
+		MessageBoxW(NULL, L"Failed to register gr7Changelog window class", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
+		return 1;
+	}
+	return 0;
 }

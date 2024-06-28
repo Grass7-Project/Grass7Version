@@ -1,25 +1,148 @@
 #include "stdafx.h"
 #include "MainGUI.h"
-#include "ResourceLoader.h"
 #include "ButtonGUI.h"
+#include "KeyHandler.h"
+#include "ChangelogGUI.h"
 
 MainGUI MainGUIObjects;
 
 // Changelog entry function
-int MainGUI::Init(HWND &hWnd)
+int MainGUI::Init()
 {
-	Grass7API::Branding::LoadOSBrandingImage(MainGUIObjects.hBitmap);
-	MainGUIObjects.hBitmap = Grass7API::Paint::ReplaceColor(MainGUIObjects.hBitmap, RGB(255, 255, 255), RGB(240, 240, 240), NULL);
-
-	// Call the function to load the bitmaps
-	ResourceLoader::LoadBitmaps();
-
-	// Load strings
-	ResourceLoader::LoadStrings();
+	BOOL ret = 0;
+	NONCLIENTMETRICSW ncm;
+	ZeroMemory(&ncm, sizeof(NONCLIENTMETRICSW));
+	ncm.cbSize = sizeof(NONCLIENTMETRICSW);
+	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, FALSE);
+	MainObjects.hfDefault = CreateFontIndirectW(&ncm.lfMessageFont);
 
 	MainGUIObjects.wSizeX = 474;
 	MainGUIObjects.wSizeY = 412;
 
+	std::wstring szTitle = L"About ";
+	szTitle.append(MainObjects.szBranding);
+
+	MainObjects.hWndMainWindow = CreateWindowExW(
+		WS_EX_DLGMODALFRAME,
+		L"gr7About",
+		szTitle.c_str(),
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		MainGUIObjects.wSizeX, MainGUIObjects.wSizeY,
+		NULL,
+		NULL,
+		MainObjects.hInst,
+		NULL
+	);
+
+	if (!MainObjects.hWndMainWindow) {
+		MessageBoxW(NULL, L"Failed to create the Main Window", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
+		return 1;
+	}
+
+	DWORD dwStyle = GetWindowLongW(MainObjects.hWndMainWindow, GWL_STYLE);
+	DWORD dwRemove = WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+	DWORD dwNewStyle = dwStyle & ~dwRemove;
+	SetWindowLongW(MainObjects.hWndMainWindow, GWL_STYLE, dwNewStyle);
+
+	MainGUIObjects.hWndStaticBar = CreateWindowW(L"STATIC", NULL, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE, 15, 83, 426, 2, MainObjects.hWndMainWindow, (HMENU)IDC_STATIC, MainObjects.hInst, NULL);
+
+	if (!MainGUIObjects.hWndStaticBar) {
+		MessageBoxW(NULL, L"For some reason, the static bar failed to be created", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
+		return 1;
+	}
+
+	ret = ButtonGUI::InitOKBtn();
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = ButtonGUI::InitChangelogBtn();
+	if (ret != 0) {
+		return ret;
+	}
+
+	ShowWindow(MainObjects.hWndMainWindow, SW_SHOW);
+	UpdateWindow(MainObjects.hWndMainWindow);
+
+	return 0;
+}
+
+LRESULT CALLBACK MainGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	int wmId, wmEvent;
+
+	switch (uMsg)
+	{
+	case WM_KEYDOWN:
+	{
+		KeyHandler::InvokeKeyHandler(wParam);
+	}
+	break;
+	case WM_LBUTTONDOWN:
+	{
+		SetFocus(hWnd);
+	}
+	break;
+	case WM_COMMAND:
+		wmId = LOWORD(wParam);
+		wmEvent = HIWORD(wParam);
+		switch (wmId)
+		{
+		case ID_OKBTN:
+			::DestroyWindow(hWnd);
+			break;
+		case ID_CHANGELOGBTN:
+			{
+				ChangelogGUI::Init();
+			}
+			break;
+		default:
+			return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+		}
+		break;
+	case WM_PAINT:
+		PAINTSTRUCT     ps;
+		HDC             hdc;
+		BITMAP			Bitmap;
+	{
+		hdc = BeginPaint(hWnd, &ps);
+
+		HDC hdcMem = CreateCompatibleDC(hdc);
+		HBITMAP oldBitmap = (HBITMAP)SelectObject(hdcMem, BitmapObjects.hBanner);
+		GetObjectW(BitmapObjects.hBanner, sizeof(Bitmap), &Bitmap);
+		BitBlt(hdc, 0, 0, Bitmap.bmWidth, Bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
+		SelectObject(hdcMem, oldBitmap);
+
+		// Text painting options
+		int xPos = 53;
+		int yPos = 100;
+		COLORREF color = RGB(0, 0, 0);
+		int nSize = 8;
+
+		Grass7API::Paint::PaintText(hdc, xPos, yPos, L"Tahoma", color, L"Microsoft Windows", nSize, 1, TRANSPARENT, FW_LIGHT);
+
+		DeleteDC(hdcMem);
+		DeleteObject(oldBitmap);
+
+		EndPaint(hWnd, &ps);
+	}
+	break;
+
+	case WM_DESTROY:
+	{
+		DeleteObject(MainObjects.hfDefault);
+		DeleteObject(BitmapObjects.hBanner);
+		PostQuitMessage(0);
+	}
+	break;
+	}
+
+	return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+BOOL MainGUI::Register()
+{
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -32,103 +155,13 @@ int MainGUI::Init(HWND &hWnd)
 	wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
 	wcex.hbrBackground = CreateSolidBrush(RGB(240, 240, 240));
 	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = L"gr7versionCL";
+	wcex.lpszClassName = L"gr7About";
 	wcex.hIconSm = NULL;
 
 	if (!RegisterClassExW(&wcex))
 	{
-		MessageBoxW(NULL,
-			L"Call to RegisterClassEx failed!",
-			L"Error",
-			NULL);
-
+		MessageBoxW(NULL, L"Failed to register gr7About window class", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
-
-	std::wstring szTitle = L"About ";
-	szTitle.append(MainObjects.szBranding);
-
-	hWnd = CreateWindowExW(
-		WS_EX_DLGMODALFRAME,
-		L"gr7versionCL",
-		szTitle.c_str(),
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		MainGUIObjects.wSizeX, MainGUIObjects.wSizeY,
-		NULL,
-		NULL,
-		MainObjects.hInst,
-		NULL
-	);
-
-	if (!hWnd)
-	{
-		MessageBoxW(NULL,
-			L"Call to CreateWindow failed!",
-			L"Error",
-			NULL);
-		return 1;
-	}
-
-	DWORD dwStyle = GetWindowLongW(hWnd, GWL_STYLE);
-	DWORD dwRemove = WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-	DWORD dwNewStyle = dwStyle & ~dwRemove;
-	SetWindowLongW(hWnd, GWL_STYLE, dwNewStyle);
-
-	MainGUIObjects.hWndStaticBar = CreateWindowW(L"STATIC", NULL, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE, 15, 83, 426, 2, hWnd, (HMENU)IDC_STATIC, MainObjects.hInst, NULL);
-
-	ShowWindow(hWnd, SW_SHOW);
-	UpdateWindow(hWnd);
-
-	ButtonGUI::InitMainWndScreenshot();
-	ButtonGUI::InitNormalBtn();
-
-	if (ButtonObjects.NormalButtonState == 3) {
-		::SendMessageW(ButtonObjects.hNormalBtn, BTN_ENABLE, (WPARAM)(INT)0, 0);
-	}
-	::SendMessageW(ButtonObjects.hNormalBtn, BTN_UPDATE, (WPARAM)(INT)0, 0);
-
-	MSG msg;
-	while (GetMessageW(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-	}
-
-	return (int)msg.wParam;
-}
-
-LRESULT CALLBACK MainGUI::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	HDC hdc;
-	PAINTSTRUCT ps;
-	BITMAP Bitmap;
-
-	switch (uMsg)
-	{
-	case WM_PAINT:
-	{
-		hdc = BeginPaint(hwnd, &ps);
-
-		HDC hdcMem = CreateCompatibleDC(hdc);
-		HBITMAP oldBitmap = (HBITMAP)SelectObject(hdcMem, MainGUIObjects.hBitmap);
-		GetObjectW(MainGUIObjects.hBitmap, sizeof(Bitmap), &Bitmap);
-		BitBlt(hdc, 0, 0, Bitmap.bmWidth, Bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
-		SelectObject(hdcMem, oldBitmap);
-
-		DeleteDC(hdcMem);
-		DeleteObject(oldBitmap);
-
-		EndPaint(hwnd, &ps);
-	}
-	break;
-
-	case WM_DESTROY:
-	{
-		PostQuitMessage(0);
-	}
-	break;
-	}
-
-	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+	return 0;
 }

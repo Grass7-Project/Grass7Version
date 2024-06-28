@@ -117,6 +117,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>comctl32.lib;gr7api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -132,6 +133,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>comctl32.lib;gr7api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,6 +153,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>comctl32.lib;gr7api.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
     </Link>
     <PostBuildEvent>
       <Command>"C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /v /f "$(SolutionDir)Certificates\gr7SPC.pfx" /fd sha256 /tr http://timestamp.digicert.com /p redacted /td sha256 "$(SolutionDir)Build\$(Platform)\$(Configuration)\$(targetfilename)"</Command>
@@ -173,6 +176,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>comctl32.lib;gr7api.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalManifestDependencies>type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*';%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
     </Link>
     <PostBuildEvent>
       <Command>"C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /v /f "$(SolutionDir)Certificates\gr7SPC.pfx" /fd sha256 /tr http://timestamp.digicert.com /p redacted /td sha256 "$(SolutionDir)Build\$(Platform)\$(Configuration)\$(targetfilename)"</Command>
@@ -187,6 +191,7 @@
     <ClInclude Include="ButtonGUI.h" />
     <ClInclude Include="ChangelogGUI.h" />
     <ClInclude Include="Global.h" />
+    <ClInclude Include="KeyHandler.h" />
     <ClInclude Include="MainInit.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceLoader.h" />
@@ -198,6 +203,7 @@
     <ClCompile Include="ButtonGUI.cpp" />
     <ClCompile Include="ChangelogGUI.cpp" />
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="KeyHandler.cpp" />
     <ClCompile Include="MainInit.cpp" />
     <ClCompile Include="ResourceLoader.cpp" />
     <ClCompile Include="stdafx.cpp">

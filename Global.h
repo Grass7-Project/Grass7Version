@@ -9,32 +9,29 @@ public:
 	HWND hWndMainWindow;
 	HWND hWndChangelogWindow;
 	HWND hWndRichEditCtrl;
+	HFONT hfDefault;
 	wchar_t *szBranding;
 };
 
 // Buttons
 class GlobalButtons {
 public:
-	HWND hNormalBtn;
-
-	int NormalButtonState;
-
-	BOOL NormalButtonDisabled;
+	HWND hOKBtn;
+	HWND hChangelogBtn;
 };
 
 // Application Resource Strings
 class GlobalAppResStrings {
 public:
-	std::wstring NextButtonText;
+	std::wstring OKButtonText;
+	std::wstring ChangelogButtonText;
+	std::wstring ErrorTitleText;
 };
 
 // Bitmaps
 class GlobalBitmaps {
 public:
-	HBITMAP hNormalBtnImg1, // Normal Button Bitmaps
-		hNormalBtnImg2,
-		hNormalBtnImg3,
-		hNormalBtnImg4;
+	HBITMAP hBanner;
 };
 
 extern GlobalMain MainObjects;

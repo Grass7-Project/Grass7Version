@@ -35,9 +35,10 @@
 #include <fstream>
 #include <string>
 #include <Gr7API.h>
-#include "Global.h"
 #include <sstream>
 #include <string>
 #include <fstream>
 #include <vector>
 #include "strsafe.h"
+
+#include "Global.h"
