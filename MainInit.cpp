@@ -4,7 +4,7 @@
 #include "ChangelogGUI.h"
 #include "ResourceLoader.h"
 
-int MainInit::Init(MSG &msg, HINSTANCE &hInstance, HINSTANCE &hPrevInstance, LPTSTR &lpCmdLine, int &nCmdShow)
+int MainInit::Init(HINSTANCE &hInstance, HINSTANCE &hPrevInstance, LPTSTR &lpCmdLine, int &nCmdShow)
 {
 	BOOL ret = 0;
 	if (Grass7API::Check::isGrass7() == 0) {

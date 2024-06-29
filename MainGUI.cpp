@@ -16,16 +16,21 @@ int MainGUI::Init()
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, FALSE);
 	MainObjects.hfDefault = CreateFontIndirectW(&ncm.lfMessageFont);
 
+	MainGUIObjects.szTitle = L"About ";
+	MainGUIObjects.szTitle.append(BrandingStringsObjects.GenericBrandingText);
+
+	MainGUI::PopulateVersionText();
+
+	MainGUIObjects.FirstLine = 0;
+	MainGUIObjects.LastLine = (int)MainGUIObjects.VersionText.size() - 1;
+
 	MainGUIObjects.wSizeX = 474;
 	MainGUIObjects.wSizeY = 412;
-
-	std::wstring szTitle = L"About ";
-	szTitle.append(MainObjects.szBranding);
 
 	MainObjects.hWndMainWindow = CreateWindowExW(
 		WS_EX_DLGMODALFRAME,
 		L"gr7About",
-		szTitle.c_str(),
+		MainGUIObjects.szTitle.c_str(),
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		MainGUIObjects.wSizeX, MainGUIObjects.wSizeY,
@@ -105,25 +110,40 @@ LRESULT CALLBACK MainGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		PAINTSTRUCT     ps;
 		HDC             hdc;
 		BITMAP			Bitmap;
+		COLORREF		color;
+		HDC				hdcMem;
+		HBITMAP			oldBitmap;
+		int xPos, yPos, yPosSpacing, nSize, yPosOffset, i;
 	{
 		hdc = BeginPaint(hWnd, &ps);
 
-		HDC hdcMem = CreateCompatibleDC(hdc);
-		HBITMAP oldBitmap = (HBITMAP)SelectObject(hdcMem, BitmapObjects.hBanner);
+		// paint bitmap
+		hdcMem = CreateCompatibleDC(hdc);
+		oldBitmap = (HBITMAP)SelectObject(hdcMem, BitmapObjects.hBanner);
 		GetObjectW(BitmapObjects.hBanner, sizeof(Bitmap), &Bitmap);
 		BitBlt(hdc, 0, 0, Bitmap.bmWidth, Bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
 		SelectObject(hdcMem, oldBitmap);
 
-		// Text painting options
-		int xPos = 53;
-		int yPos = 100;
-		COLORREF color = RGB(0, 0, 0);
-		int nSize = 8;
-
-		Grass7API::Paint::PaintText(hdc, xPos, yPos, L"Tahoma", color, L"Microsoft Windows", nSize, 1, TRANSPARENT, FW_LIGHT);
-
 		DeleteDC(hdcMem);
 		DeleteObject(oldBitmap);
+
+		// Text painting options
+		xPos = 53;
+		yPos = 100;
+		yPosSpacing = 16;
+		color = RGB(0, 0, 0);
+		nSize = 8;
+		yPosOffset = 0;
+
+		for (i = MainGUIObjects.FirstLine; i <= MainGUIObjects.LastLine; i++)
+		{
+			Grass7API::Paint::PaintText(hdc, xPos, yPos + yPosOffset, L"Tahoma", color, MainGUIObjects.VersionText[i].c_str(), nSize, 1, TRANSPARENT, FW_LIGHT);
+			yPosOffset = yPosOffset + yPosSpacing;
+		}
+
+		Grass7API::Paint::PaintText(hdc, xPos, yPos + 159, L"Tahoma", color, L"Name and Organization:", nSize, 1, TRANSPARENT, FW_LIGHT);
+		Grass7API::Paint::PaintText(hdc, xPos + 15, yPos + 159 + 19, L"Tahoma", color, MainGUIObjects.RegisteredOwner.c_str(), nSize, 1, TRANSPARENT, FW_LIGHT);
+		Grass7API::Paint::PaintText(hdc, xPos + 15, yPos + 159 + 19 + 17, L"Tahoma", color, MainGUIObjects.RegisteredOrganization.c_str(), nSize, 1, TRANSPARENT, FW_LIGHT);
 
 		EndPaint(hWnd, &ps);
 	}
@@ -164,4 +184,35 @@ BOOL MainGUI::Register()
 		return 1;
 	}
 	return 0;
+}
+
+void MainGUI::PopulateVersionText()
+{
+	// Get branding
+	wchar_t *szShortBranding;
+	Grass7API::Branding::LoadOSBrandingString(szShortBranding, L"%WINDOWS_SHORT%");
+
+	// Init variables
+	std::wstring BuildString(MAX_PATH, 0);
+	std::wstring CurrentBuild(MAX_PATH, 0);
+	std::wstring RegisteredOwner(MAX_PATH, 0);
+	std::wstring RegisteredOrganization(MAX_PATH, 0);
+	
+	// Load system information strings
+	Grass7API::SystemInfo::GetBuildString(&BuildString[0], (int)BuildString.size());
+	Grass7API::SystemInfo::GetCurrentBuild(&CurrentBuild[0], (int)CurrentBuild.size());
+	Grass7API::SystemInfo::GetRegisteredOwner(&RegisteredOwner[0], (int)RegisteredOwner.size());
+	Grass7API::SystemInfo::GetRegisteredOrganization(&RegisteredOrganization[0], (int)RegisteredOrganization.size());
+
+	// Set registered system owner/organization strings
+	MainGUIObjects.RegisteredOwner = RegisteredOwner;
+	MainGUIObjects.RegisteredOrganization = RegisteredOrganization;
+
+	std::wstring szBuildInfo = L"Build ";
+	szBuildInfo.append(BuildString);
+
+	// Put strings into VersionText array
+	MainGUIObjects.VersionText.push_back(szShortBranding);
+	MainGUIObjects.VersionText.push_back(szBuildInfo);
+	MainGUIObjects.VersionText.push_back(BrandingStringsObjects.CopyrightBrandingText);
 }

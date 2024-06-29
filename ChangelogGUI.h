@@ -10,4 +10,6 @@ private:
 
 	int wSizeX,
 		wSizeY;
+
+	std::wstring szTitle;
 };

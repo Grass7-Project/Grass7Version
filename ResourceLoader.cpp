@@ -10,8 +10,16 @@ void ResourceLoader::LoadBitmaps()
 // Load strings
 void ResourceLoader::LoadStrings()
 {
+	wchar_t *szGenericBranding;
+	wchar_t *szCopyrightBranding;
+
 	// Load branding string
-	Grass7API::Branding::LoadOSBrandingString(MainObjects.szBranding, L"%WINDOWS_GENERIC%");
+	Grass7API::Branding::LoadOSBrandingString(szGenericBranding, L"%WINDOWS_GENERIC%");
+	Grass7API::Branding::LoadOSBrandingString(szCopyrightBranding, L"%WINDOWS_COPYRIGHT%");
+
+	// Set branding strings
+	BrandingStringsObjects.GenericBrandingText = szGenericBranding;
+	BrandingStringsObjects.CopyrightBrandingText = szCopyrightBranding;
 
 	// Init variables
 	std::wstring OKButtonText(MAX_PATH, 0);

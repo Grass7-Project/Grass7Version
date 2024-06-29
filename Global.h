@@ -10,7 +10,6 @@ public:
 	HWND hWndChangelogWindow;
 	HWND hWndRichEditCtrl;
 	HFONT hfDefault;
-	wchar_t *szBranding;
 };
 
 // Buttons
@@ -28,6 +27,13 @@ public:
 	std::wstring ErrorTitleText;
 };
 
+// Branding Strings
+class GlobalBrandingStrings {
+public:
+	std::wstring GenericBrandingText;
+	std::wstring CopyrightBrandingText;
+};
+
 // Bitmaps
 class GlobalBitmaps {
 public:
@@ -37,4 +43,5 @@ public:
 extern GlobalMain MainObjects;
 extern GlobalButtons ButtonObjects;
 extern GlobalAppResStrings AppResStringsObjects;
+extern GlobalBrandingStrings BrandingStringsObjects;
 extern GlobalBitmaps BitmapObjects;

@@ -7,9 +7,17 @@ public:
 
 private:
 	static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+	static void PopulateVersionText();
 
 	int wSizeX,
-		wSizeY;
+		wSizeY,
+		FirstLine,
+		LastLine;
 
 	HWND hWndStaticBar;
+
+	std::wstring szTitle;
+	std::wstring RegisteredOwner;
+	std::wstring RegisteredOrganization;
+	std::vector< std::wstring > VersionText;
 };

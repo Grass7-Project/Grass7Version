@@ -9,13 +9,13 @@ int ChangelogGUI::Init()
 	ChangelogGUIObjects.wSizeX = 900;
 	ChangelogGUIObjects.wSizeY = 600;
 
-	std::wstring szTitle = MainObjects.szBranding;
-	szTitle.append(L" Changelog");
+	ChangelogGUIObjects.szTitle.append(BrandingStringsObjects.GenericBrandingText);
+	ChangelogGUIObjects.szTitle.append(L" Changelog");
 
 	MainObjects.hWndChangelogWindow = CreateWindowExW(
 		NULL,
 		L"gr7Changelog",
-		szTitle.c_str(),
+		ChangelogGUIObjects.szTitle.c_str(),
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		ChangelogGUIObjects.wSizeX, ChangelogGUIObjects.wSizeY,
@@ -37,7 +37,7 @@ int ChangelogGUI::Init()
 	SetWindowLongW(MainObjects.hWndChangelogWindow, GWL_STYLE, dwNewStyle);
 
 	std::wstring windirW(MAX_PATH, 0);
-	UINT errWinDir = GetWindowsDirectoryW(&windirW[0], MAX_PATH);
+	UINT errWinDir = GetWindowsDirectoryW(&windirW[0], (int)windirW.size());
 	if (errWinDir == 0) {
 		MessageBoxW(NULL, L"Failed to get path of the Windows directory", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
 		return 1;
