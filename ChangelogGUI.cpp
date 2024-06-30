@@ -3,7 +3,7 @@
 
 ChangelogGUI ChangelogGUIObjects;
 
-// Changelog entry function
+// Changelog init function
 int ChangelogGUI::Init()
 {
 	ChangelogGUIObjects.wSizeX = 900;
@@ -12,6 +12,21 @@ int ChangelogGUI::Init()
 	ChangelogGUIObjects.szTitle.append(BrandingStringsObjects.GenericBrandingText);
 	ChangelogGUIObjects.szTitle.append(L" Changelog");
 
+	std::wstring windirW(MAX_PATH, 0);
+	UINT errWinDir = GetWindowsDirectoryW(&windirW[0], (int)windirW.size());
+	if (errWinDir == 0) {
+		MessageBoxW(NULL, L"Failed to get path of the Windows directory", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
+		return 1;
+	}
+	ChangelogGUIObjects.file = windirW.c_str();
+	ChangelogGUIObjects.file.append(L"\\Changelog.rtf");
+
+	return 0;
+}
+
+int ChangelogGUI::Launch()
+{
+	MainObjects.hWndChangelogWindow = NULL;
 	MainObjects.hWndChangelogWindow = CreateWindowExW(
 		NULL,
 		L"gr7Changelog",
@@ -36,15 +51,6 @@ int ChangelogGUI::Init()
 	DWORD dwNewStyle = dwStyle & ~dwRemove;
 	SetWindowLongW(MainObjects.hWndChangelogWindow, GWL_STYLE, dwNewStyle);
 
-	std::wstring windirW(MAX_PATH, 0);
-	UINT errWinDir = GetWindowsDirectoryW(&windirW[0], (int)windirW.size());
-	if (errWinDir == 0) {
-		MessageBoxW(NULL, L"Failed to get path of the Windows directory", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
-		return 1;
-	}
-	std::wstring file = windirW.c_str();
-	file.append(L"\\Changelog.rtf");
-
 	ShowWindow(MainObjects.hWndChangelogWindow, SW_SHOW);
 	UpdateWindow(MainObjects.hWndChangelogWindow);
 
@@ -53,7 +59,7 @@ int ChangelogGUI::Init()
 	lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
 	SetWindowLongW(MainObjects.hWndRichEditCtrl, GWL_EXSTYLE, lExStyle);
 	SetWindowPos(MainObjects.hWndRichEditCtrl, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-	Grass7API::RichEditControl::FillRichEditFromFile(MainObjects.hWndRichEditCtrl, file.c_str(), SF_RTF);
+	Grass7API::RichEditControl::FillRichEditFromFile(MainObjects.hWndRichEditCtrl, ChangelogGUIObjects.file.c_str(), SF_RTF);
 	::SendMessageW(MainObjects.hWndRichEditCtrl, EM_SETREADONLY, TRUE, 0);
 
 	return 0;
@@ -90,12 +96,6 @@ LRESULT CALLBACK ChangelogGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 				EndPaint(hWnd, &ps);
 			}
 			break;
-
-		case WM_DESTROY:
-		{
-			PostQuitMessage(0);
-		}
-		break;
 	}
 
 	return DefWindowProcW(hWnd, uMsg, wParam, lParam);

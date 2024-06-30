@@ -28,6 +28,14 @@ int MainInit::Init(HINSTANCE &hInstance, HINSTANCE &hPrevInstance, LPTSTR &lpCmd
 		}
 
 		ret = MainGUI::Init();
+		if (ret != 0) {
+			return ret;
+		}
+
+		ret = ChangelogGUI::Init();
+		if (ret != 0) {
+			return ret;
+		}
 
 		MSG msg;
 		while (GetMessageW(&msg, NULL, 0, 0))

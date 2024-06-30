@@ -3,6 +3,7 @@
 class ChangelogGUI {
 public:
 	static int Init();
+	static int Launch();
 	static BOOL Register();
 
 private:
@@ -12,4 +13,5 @@ private:
 		wSizeY;
 
 	std::wstring szTitle;
+	std::wstring file;
 };

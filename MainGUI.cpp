@@ -99,7 +99,7 @@ LRESULT CALLBACK MainGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			break;
 		case ID_CHANGELOGBTN:
 			{
-				ChangelogGUI::Init();
+				ChangelogGUI::Launch();
 			}
 			break;
 		default:
