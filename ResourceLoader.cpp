@@ -4,35 +4,46 @@
 void ResourceLoader::LoadBitmaps()
 {
 	Grass7API::Branding::LoadOSBrandingImage(BitmapObjects.hBanner);
-	BitmapObjects.hBanner = Grass7API::Paint::ReplaceColor(BitmapObjects.hBanner, RGB(255, 255, 255), RGB(240, 240, 240), NULL);
+	HDC hdc = nullptr;
+	BitmapObjects.hBanner = Grass7API::Paint::ReplaceColor(BitmapObjects.hBanner, RGB(255, 255, 255), RGB(240, 240, 240), hdc);
 }
 
-// Load strings
 void ResourceLoader::LoadStrings()
 {
-	wchar_t *szGenericBranding;
-	wchar_t *szCopyrightBranding;
-
-	// Load branding string
-	Grass7API::Branding::LoadOSBrandingString(szGenericBranding, L"%WINDOWS_GENERIC%");
-	Grass7API::Branding::LoadOSBrandingString(szCopyrightBranding, L"%WINDOWS_COPYRIGHT%");
-
-	// Set branding strings
-	BrandingStringsObjects.GenericBrandingText = szGenericBranding;
-	BrandingStringsObjects.CopyrightBrandingText = szCopyrightBranding;
-
-	// Init variables
-	std::wstring OKButtonText(MAX_PATH, 0);
-	std::wstring ChangelogButtonText(MAX_PATH, 0);
-	std::wstring ErrorTitleText(MAX_PATH, 0);
+	InternalLoadBrandingStrings();
 
 	// Button strings
-	OKButtonText.resize(LoadStringW(MainObjects.hInst, IDS_OKBTN, &OKButtonText[0], (int)OKButtonText.size()));
-	ChangelogButtonText.resize(LoadStringW(MainObjects.hInst, IDS_CHANGELOGBTN, &ChangelogButtonText[0], (int)ChangelogButtonText.size()));
-	ErrorTitleText.resize(LoadStringW(MainObjects.hInst, IDS_ERRORTITLE, &ErrorTitleText[0], (int)ErrorTitleText.size()));
+	InternalLoadString(AppResStringsObjects.OKButtonText, IDS_OKBTN);
+	InternalLoadString(AppResStringsObjects.ChangelogButtonText, IDS_CHANGELOGBTN);
+	InternalLoadString(AppResStringsObjects.ErrorTitleText, IDS_ERRORTITLE);
+}
 
-	// Set loaded wstrings
-	AppResStringsObjects.OKButtonText = OKButtonText;
-	AppResStringsObjects.ChangelogButtonText = ChangelogButtonText;
-	AppResStringsObjects.ErrorTitleText = ErrorTitleText;
+void ResourceLoader::InternalLoadString(std::wstring &strReturn, UINT uID)
+{
+	std::wstring strTemp(MAX_PATH, 0);
+	strTemp.resize((size_t)LoadStringW(MainObjects.hInst, uID, &strTemp[0], (int)strTemp.size()));
+	strReturn = strTemp;
+	strTemp.clear();
+}
+
+void ResourceLoader::InternalLoadBrandingStrings()
+{
+	PWSTR szGenericBranding = nullptr;
+	PWSTR szCopyrightBranding = nullptr;
+	PWSTR szShortBranding = nullptr;
+
+	HMODULE hBrandingMod = LoadLibraryExW(L"winbrand.dll", nullptr, NULL);
+
+	Grass7API::Branding::LoadOSBrandingString(hBrandingMod, szGenericBranding, L"%WINDOWS_GENERIC%");
+	Grass7API::Branding::LoadOSBrandingString(hBrandingMod, szCopyrightBranding, L"%WINDOWS_COPYRIGHT%");
+	Grass7API::Branding::LoadOSBrandingString(hBrandingMod, szShortBranding, L"%WINDOWS_SHORT%");
+
+	BrandingStringsObjects.GenericBrandingText.append(szGenericBranding);
+	BrandingStringsObjects.CopyrightBrandingText.append(szCopyrightBranding);
+	BrandingStringsObjects.ShortBrandingText.append(szShortBranding);
+
+	GlobalFree((HGLOBAL)szGenericBranding);
+	GlobalFree((HGLOBAL)szCopyrightBranding);
+	GlobalFree((HGLOBAL)szShortBranding);
+	FreeLibrary(hBrandingMod);
 }

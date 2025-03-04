@@ -2,8 +2,8 @@
 
 class ChangelogGUI {
 public:
-	static int Init();
-	static int Launch();
+	static BOOL Init();
+	static BOOL Launch();
 	static BOOL Register();
 
 private:

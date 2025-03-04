@@ -17,7 +17,6 @@
 #include <windows.h>
 #include <Richedit.h>
 
-// C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -30,11 +29,8 @@
 #include <shellapi.h>
 #include <stdio.h>
 #include <iostream>
-
-
 #include <fstream>
 #include <string>
-#include <Gr7API.h>
 #include <sstream>
 #include <string>
 #include <fstream>
@@ -42,4 +38,5 @@
 #include <unordered_map>
 #include "strsafe.h"
 
+#include <Gr7API.h>
 #include "Global.h"

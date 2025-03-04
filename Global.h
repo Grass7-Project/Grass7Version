@@ -10,6 +10,7 @@ public:
 	HWND hWndChangelogWindow;
 	HWND hWndRichEditCtrl;
 	HFONT hfDefault;
+	HMODULE hModRichEdit;
 };
 
 // Buttons
@@ -32,6 +33,7 @@ class GlobalBrandingStrings {
 public:
 	std::wstring GenericBrandingText;
 	std::wstring CopyrightBrandingText;
+	std::wstring ShortBrandingText;
 };
 
 // Bitmaps

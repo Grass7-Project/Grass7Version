@@ -6,18 +6,15 @@
 
 MainGUI MainGUIObjects;
 
-// Changelog entry function
-int MainGUI::Init()
+BOOL MainGUI::Init()
 {
-	BOOL ret = 0;
 	NONCLIENTMETRICSW ncm;
 	ZeroMemory(&ncm, sizeof(NONCLIENTMETRICSW));
 	ncm.cbSize = sizeof(NONCLIENTMETRICSW);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, FALSE);
 	MainObjects.hfDefault = CreateFontIndirectW(&ncm.lfMessageFont);
 
-	MainGUIObjects.szTitle = L"About ";
-	MainGUIObjects.szTitle.append(BrandingStringsObjects.GenericBrandingText);
+	MainGUIObjects.szTitle.append(L"About " + BrandingStringsObjects.GenericBrandingText);
 
 	MainGUI::PopulateVersionText();
 
@@ -34,14 +31,14 @@ int MainGUI::Init()
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		MainGUIObjects.wSizeX, MainGUIObjects.wSizeY,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		MainObjects.hInst,
-		NULL
+		nullptr
 	);
 
 	if (!MainObjects.hWndMainWindow) {
-		MessageBoxW(NULL, L"Failed to create the Main Window", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
+		MessageBoxW(nullptr, L"Failed to create the Main Window", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 
@@ -50,21 +47,19 @@ int MainGUI::Init()
 	DWORD dwNewStyle = dwStyle & ~dwRemove;
 	SetWindowLongW(MainObjects.hWndMainWindow, GWL_STYLE, dwNewStyle);
 
-	MainGUIObjects.hWndStaticBar = CreateWindowW(L"STATIC", NULL, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE, 15, 83, 426, 2, MainObjects.hWndMainWindow, (HMENU)IDC_STATIC, MainObjects.hInst, NULL);
+	MainGUIObjects.hWndStaticBar = CreateWindowW(L"STATIC", nullptr, SS_ETCHEDHORZ | WS_CHILD | WS_VISIBLE, 15, 83, 426, 2, MainObjects.hWndMainWindow, (HMENU)IDC_STATIC, MainObjects.hInst, nullptr);
 
 	if (!MainGUIObjects.hWndStaticBar) {
-		MessageBoxW(NULL, L"For some reason, the static bar failed to be created", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
+		MessageBoxW(nullptr, L"The static bar failed to be created", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 
-	ret = ButtonGUI::InitOKBtn();
-	if (ret != 0) {
-		return ret;
+	if (ButtonGUI::InitOKBtn()) {
+		return 1;
 	}
 
-	ret = ButtonGUI::InitChangelogBtn();
-	if (ret != 0) {
-		return ret;
+	if (ButtonGUI::InitChangelogBtn()) {
+		return 1;
 	}
 
 	ShowWindow(MainObjects.hWndMainWindow, SW_SHOW);
@@ -95,10 +90,11 @@ LRESULT CALLBACK MainGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		switch (wmId)
 		{
 		case ID_OKBTN:
-			::DestroyWindow(hWnd);
+			DestroyWindow(hWnd);
 			break;
 		case ID_CHANGELOGBTN:
 			{
+			if (!IsWindow(MainObjects.hWndChangelogWindow))
 				ChangelogGUI::Launch();
 			}
 			break;
@@ -113,6 +109,7 @@ LRESULT CALLBACK MainGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		COLORREF		color;
 		HDC				hdcMem;
 		HBITMAP			oldBitmap;
+		RECT			rchWnd;
 		int xPos, yPos, yPosSpacing, nSize, yPosOffset, i;
 	{
 		hdc = BeginPaint(hWnd, &ps);
@@ -135,15 +132,16 @@ LRESULT CALLBACK MainGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		nSize = 8;
 		yPosOffset = 0;
 
+		GetClientRect(hWnd, &rchWnd);
 		for (i = MainGUIObjects.FirstLine; i <= MainGUIObjects.LastLine; i++)
 		{
-			Grass7API::Paint::PaintText(hdc, xPos, yPos + yPosOffset, L"Tahoma", color, MainGUIObjects.VersionText[i].c_str(), nSize, 1, TRANSPARENT, FW_LIGHT);
+			Grass7API::Paint::PaintText(hdc, xPos, yPos + yPosOffset, L"Tahoma", color, MainGUIObjects.VersionText[i].c_str(), nSize, 1, TRANSPARENT, FW_LIGHT, &rchWnd);
 			yPosOffset = yPosOffset + yPosSpacing;
 		}
 
-		Grass7API::Paint::PaintText(hdc, xPos, yPos + 159, L"Tahoma", color, L"Name and Organization:", nSize, 1, TRANSPARENT, FW_LIGHT);
-		Grass7API::Paint::PaintText(hdc, xPos + 15, yPos + 159 + 19, L"Tahoma", color, MainGUIObjects.RegisteredOwner.c_str(), nSize, 1, TRANSPARENT, FW_LIGHT);
-		Grass7API::Paint::PaintText(hdc, xPos + 15, yPos + 159 + 19 + 17, L"Tahoma", color, MainGUIObjects.RegisteredOrganization.c_str(), nSize, 1, TRANSPARENT, FW_LIGHT);
+		Grass7API::Paint::PaintText(hdc, xPos, yPos + 159, L"Tahoma", color, L"Name and Organization:", nSize, 1, TRANSPARENT, FW_LIGHT, &rchWnd);
+		Grass7API::Paint::PaintText(hdc, xPos + 15, yPos + 159 + 19, L"Tahoma", color, MainGUIObjects.RegisteredOwner.c_str(), nSize, 1, TRANSPARENT, FW_LIGHT, &rchWnd);
+		Grass7API::Paint::PaintText(hdc, xPos + 15, yPos + 159 + 19 + 17, L"Tahoma", color, MainGUIObjects.RegisteredOrganization.c_str(), nSize, 1, TRANSPARENT, FW_LIGHT, &rchWnd);
 
 		EndPaint(hWnd, &ps);
 	}
@@ -151,8 +149,6 @@ LRESULT CALLBACK MainGUI::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 	case WM_DESTROY:
 	{
-		DeleteObject(MainObjects.hfDefault);
-		DeleteObject(BitmapObjects.hBanner);
 		PostQuitMessage(0);
 	}
 	break;
@@ -171,16 +167,16 @@ BOOL MainGUI::Register()
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = MainObjects.hInst;
-	wcex.hIcon = NULL;
-	wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
+	wcex.hIcon = nullptr;
+	wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);
 	wcex.hbrBackground = CreateSolidBrush(RGB(240, 240, 240));
-	wcex.lpszMenuName = NULL;
+	wcex.lpszMenuName = nullptr;
 	wcex.lpszClassName = L"gr7About";
-	wcex.hIconSm = NULL;
+	wcex.hIconSm = nullptr;
 
 	if (!RegisterClassExW(&wcex))
 	{
-		MessageBoxW(NULL, L"Failed to register gr7About window class", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
+		MessageBoxW(nullptr, L"Failed to register gr7About window class", AppResStringsObjects.ErrorTitleText.c_str(), MB_ICONERROR | MB_OK);
 		return 1;
 	}
 	return 0;
@@ -188,10 +184,6 @@ BOOL MainGUI::Register()
 
 void MainGUI::PopulateVersionText()
 {
-	// Get branding
-	wchar_t *szShortBranding;
-	Grass7API::Branding::LoadOSBrandingString(szShortBranding, L"%WINDOWS_SHORT%");
-
 	// Init variables
 	std::wstring BuildString(MAX_PATH, 0);
 	std::wstring CurrentBuild(MAX_PATH, 0);
@@ -212,7 +204,7 @@ void MainGUI::PopulateVersionText()
 	szBuildInfo.append(BuildString);
 
 	// Put strings into VersionText array
-	MainGUIObjects.VersionText.push_back(szShortBranding);
+	MainGUIObjects.VersionText.push_back(BrandingStringsObjects.ShortBrandingText);
 	MainGUIObjects.VersionText.push_back(szBuildInfo);
 	MainGUIObjects.VersionText.push_back(BrandingStringsObjects.CopyrightBrandingText);
 }

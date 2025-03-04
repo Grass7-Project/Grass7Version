@@ -2,7 +2,7 @@
 
 class MainGUI {
 public:
-	static int Init();
+	static BOOL Init();
 	static BOOL Register();
 
 private:
